@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-сайт для помогающих специалистов</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --grad-bg: linear-gradient(135deg, #0a0a14 0%, #0d1025 40%, #0f0a1e 70%, #080d1a 100%);
+    --grad-text: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+    --grad-card: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    --accent: #7c3aed;
+    --accent2: #3b82f6;
+    --green: #10b981;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--grad-bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── STARS BG ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(167,139,250,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 15%, rgba(96,165,250,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 60%, rgba(52,211,153,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 10% 70%, rgba(167,139,250,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 85%, rgba(96,165,250,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, rgba(52,211,153,0.25) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 100px 20px 80px;
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 18px;
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.35);
+    border-radius: 100px;
+    font-size: 13px;
+    color: #a78bfa;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5.5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    animation: fadeDown 0.7s 0.1s ease both;
+  }
+
+  .grad-text {
+    background: var(--grad-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0 auto 48px;
+    animation: fadeDown 0.7s 0.2s ease both;
+  }
+
+  /* ── ADVANTAGES ── */
+  .section-label {
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 56px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 80px;
+  }
+
+  .card {
+    background: var(--grad-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 28px;
+    backdrop-filter: blur(12px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    animation: fadeUp 0.6s ease both;
+  }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.2s; }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 60px rgba(124,58,237,0.18);
+    border-color: rgba(124,58,237,0.3);
+  }
+
+  .card-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+  .card-icon.purple { background: rgba(124,58,237,0.18); }
+  .card-icon.blue   { background: rgba(59,130,246,0.18); }
+  .card-icon.green  { background: rgba(16,185,129,0.18); }
+
+  .card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .card p {
+    font-size: 0.93rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* ── FOR WHOM ── */
+  .forwhom {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 56px 48px;
+    margin-bottom: 80px;
+    backdrop-filter: blur(8px);
+  }
+
+  .forwhom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 36px;
+  }
+
+  .forwhom-col h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #a78bfa;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .forwhom-col ul {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .forwhom-col ul li {
+    font-size: 0.93rem;
+    color: var(--muted);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+
+  .forwhom-col ul li::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    text-align: center;
+    padding: 0 20px 100px;
+  }
+
+  .cta-section h2 {
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .cta-section > .container > p {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 40px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-row { display: flex; gap: 14px; justify-content: center; width: 100%; }
+
+  .cta-wrap {
+    position: relative;
+    flex: 1 1 0; min-width: 0;
+    display: flex; flex-direction: column; align-items: stretch;
+    max-width: 260px;
+  }
+
+  .btn-cta {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+    background-size: 200% 100%;
+    color: #fff; text-decoration: none;
+    padding: 15px 28px; border-radius: 50px;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.06em;
+    position: relative; overflow: hidden; width: 100%;
+    box-shadow: 0 4px 24px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-cta::before {
+    content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .3s;
+    background: linear-gradient(135deg, #6d28d9, #2563eb);
+  }
+  .btn-cta svg, .btn-cta span { position: relative; z-index: 1; }
+  .btn-cta:hover::before { opacity: 1; }
+  .btn-cta:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 32px rgba(124,58,237,0.55); }
+  .btn-cta:active { transform: translateY(0) scale(.98); }
+  .btn-cta::after {
+    content: ''; position: absolute; inset: -2px; border-radius: 50px;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    z-index: -1; opacity: 0; animation: pulse-glow 2.4s ease-out infinite;
+  }
+
+  /* QR попап */
+  .cta-qr-popup {
+    position: absolute; bottom: calc(100% + 10px); left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    width: max-content;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    background: rgba(10,10,20,0.97);
+    border: 1px solid rgba(124,58,237,0.35);
+    border-radius: 16px; padding: 14px 14px 10px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+    z-index: 10;
+  }
+  .cta-qr-popup::before {
+    content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 16px;
+  }
+  .cta-qr-popup::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 7px solid transparent; border-top-color: rgba(124,58,237,0.35);
+    pointer-events: none;
+  }
+  .cta-qr-popup img {
+    width: 164px; height: 164px; display: block;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+    border-radius: 8px;
+  }
+  .qr-link { display: block; text-decoration: none; }
+  .qr-wrap-p {
+    display: inline-block; padding: 10px;
+    background: #fff; border-radius: 10px;
+    box-shadow: 0 0 30px rgba(124,58,237,0.2);
+    transition: box-shadow .3s, transform .3s;
+  }
+  .qr-wrap-p:hover { box-shadow: 0 0 50px rgba(124,58,237,0.4); transform: scale(1.02); }
+  .qr-sub {
+    font-size: 10px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 2px; margin: 0;
+  }
+  .cta-wrap:hover .cta-qr-popup,
+  .cta-qr-popup:hover { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 20px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: rgba(148,163,184,0.45);
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(124,58,237,0.45), 0 0 40px rgba(59,130,246,0.2); }
+    50%       { box-shadow: 0 0 32px rgba(124,58,237,0.7), 0 0 60px rgba(59,130,246,0.35); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .hero { padding: 70px 16px 60px; }
+    .forwhom { padding: 36px 24px; }
+    .forwhom-grid { grid-template-columns: 1fr; gap: 28px; }
+    .cards { grid-template-columns: 1fr; }
+    .btn-cta { padding: 16px 32px; font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="container">
+    <div class="badge">AI · Психологи · Коучи · Терапевты</div>
+    <h1>
+      <span class="grad-text">AI-сайт‑экосистема</span><br>
+      для помогающих специалистов
+    </h1>
+    <p class="hero-sub">
+      Сайт, который сам находит клиента, объясняет ценность вашей работы
+      и ведёт к записи — без звонков, менеджеров и потерянных заявок.
+    </p>
+  </div>
+</section>
+
+<!-- ══ ПРЕИМУЩЕСТВА ══ -->
+<section style="padding: 0 20px 40px;">
+  <div class="container">
+    <p class="section-label">Три главных преимущества</p>
+    <h2 class="section-title">Почему это работает</h2>
+
+    <div class="cards">
+
+      <!-- Карточка 1 -->
+      <div class="card">
+        <div class="card-icon purple">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="3" fill="#a78bfa"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Сайт, который продаёт вместо вас — 24/7</h3>
+        <p>Встроенная AI-диагностика выявляет запрос клиента, подбирает подходящую услугу и ведёт к записи — без звонков, менеджеров и потерянных заявок. Вы просыпаетесь с новыми клиентами.</p>
+      </div>
+
+      <!-- Карточка 2 -->
+      <div class="card">
+        <div class="card-icon blue">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="7" r="4" stroke="#60a5fa" stroke-width="2"/>
+            <path d="M16 3.5s1.5 1 1.5 3.5-1.5 3.5-1.5 3.5" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Доверие с первых секунд — даже к нестандартным методикам</h3>
+        <p>Видео-визитка специалиста, реальные истории клиентов и понятный язык вместо сложных терминов. Человек, который никогда не слышал о вас, понимает суть и ценность метода ещё до первого контакта.</p>
+      </div>
+
+      <!-- Карточка 3 -->
+      <div class="card">
+        <div class="card-icon green">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#34d399" stroke-width="2"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#34d399" stroke-width="2"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#34d399" stroke-width="2"/>
+            <path d="M17.5 14v7M14 17.5h7" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Готовый шаблон для всей ниши — не только для одного проекта</h3>
+        <p>Архитектура сайта изначально строится как тиражируемый продукт. Любой психолог или коуч может получить такой же сайт под свой бренд — это ваш следующий клиент, и следующий, и следующий.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ ДЛЯ КОГО ══ -->
+<section style="padding: 0 20px 40px;">
+  <div class="container">
+    <div class="forwhom">
+      <p class="section-label" style="text-align:left; margin-bottom:8px;">Для кого это</p>
+      <h2 style="font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700;">Подойдёт, если вы&nbsp;— помогающий специалист</h2>
+
+      <div class="forwhom-grid">
+        <div class="forwhom-col">
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="9" cy="7" r="4" stroke="#a78bfa" stroke-width="2"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Кому подходит
+          </h4>
+          <ul>
+            <li>Психологам и психотерапевтам</li>
+            <li>Коучам и карьерным консультантам</li>
+            <li>Телесным терапевтам и сомато-практикам</li>
+            <li>Нутрициологам и health-коучам</li>
+            <li>Расстановщикам, арт-терапевтам, EMDR-специалистам</li>
+            <li>Всем, кто работает с людьми 1:1 или в группах</li>
+          </ul>
+        </div>
+
+        <div class="forwhom-col">
+          <h4>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <polyline points="20 6 9 17 4 12" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Почему это выгодно
+          </h4>
+          <ul>
+            <li>Клиенты приходят сами — вы не тратите время на объяснения</li>
+            <li>Сайт работает пока вы проводите сессии или отдыхаете</li>
+            <li>Нет нужды в SMM, таргетологе и менеджере</li>
+            <li>Запись и оплата автоматизированы с первого дня</li>
+            <li>Шаблон окупается многократно — можно перепродавать коллегам</li>
+            <li>Быстрый старт: запуск без долгой разработки с нуля</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2>Хотите такой сайт для себя?</h2>
+    <p>Обсудим ваш проект, покажем примеры и рассчитаем стоимость за 15 минут</p>
+
+        <div class="cta-row">
+
+      <!-- Telegram -->
+      <div class="cta-wrap">
+        <div class="cta-qr-popup">
+          <a href="https://t.me/Sergei_A_Maslov" target="_blank" class="qr-link">
+            <div class="qr-wrap-p"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARgAAAEYCAIAAAAI7H7bAAAEcElEQVR42u3dUU4rMQyG0X8Q+99yWQEPI2LZDuc8X/WW0k8ZYSV5Pp9PgL/58hGAkEBIICRASCAkEBIICRASCAmEBEIChARCAiGBkAAhgZBASCAkQEggJBAS/F/fp17oeZ4VP/Dbc/y6fq6u93nqnMNbvw9WJPBoB0ICIQFCAiGBkCDmSJn2d/oUzzHe/vtTc57fXqdrDlP9OWz5PliRwKMdCAmEBAgJhARCAurnSFmyf+btPOftXKh6blP9fqrnP9O+D1YkEBIICYQECAmEBEIC+uZI252a55zaN9W1P6prbmNFAiEBQgIhgZBASICQIOZIuePcs+1zG/MiKxIICYQEQgKEBEICIUHMkfI/5xLbz6Prupep+lxBKxJ4tAOEBEICIYGQACFBrp0jVe/z6dovlKbz7qb9+1u/D1YkEBIICYQECAmEBEIC8jivbOb5dTk0p4pz7axIICQQEiAkEBIICYQEpHeOtH2/TfW+mu3n5k07f6/rfVqRQEggJBASICQQEggJ4ly7dJ1rN21elEv37Uw7p+7U77fre2JFAiGBkEBIgJBASCAkiDlSquctv/29/9Q8atr8Z/sc7NTcr+u+JisSCAmEBAgJhARCAiEBGTdHStM8Z9r8Ycu5bdP2iU3bn2ZFAiGBkEBIgJBASCAkiPuR1uzD6bp/KUvmY1s+hy2/FysSCAmEBEIChARCAiFB7EfKlnt43s4HqvfJbJ+TTDt/79R8zIoEHu1ASICQQEggJBASkPL9SNvvt5k2bzn1+UzbbzZtXmQ/Eni0AyEBQgIhgZBASEDW70eqnvN0zcGqz6Pbfq9Rlty7ZUUCIYGQQEiAkEBIICSIOVK23P/T9f5Pnae3fd41bb5UPR+zIoGQQEggJEBIICQQEsQcaY1Tc4ktc4yuuVaXaecoWpFASCAkEBIgJBASCAnifqTyv+tX3yPUdZ5b13yp6/W37FuzHwk82oGQACGBkEBIICQgbefaTbtHaNr9TqfmZtXzt2mf86l9VlYk8GgHQgKEBEICIYGQgKzfj1R9jtmt+45O/bxd59pV/16sSCAkEBIgJBASCAmEBKR8jrT+gxh2/8+We4qmzSG73r8VCYQEQgIhAUICIYGQIM61y5Y5TJrOl9syL+o6h7D6HL+u76EVCYQEQgIhAUICIYGQIOZI2XIu2ZY5zKnz6KbNtabtc3M/Eni0AyEBQgIhgZBASEDGzZHStJ9n2v1Op95P1z6fafM6KxJ4tAOEBEICIYGQACFBrp0jZcl5d9PmS9PmM11zp2mfsxUJhARCAiEBQgIhgZAg5kjX2n6/U9f9Qm9f/+3/O23/lRUJPNqBkEBIgJBASCAkiDlSbr03adq+mur9UdM+567zAN2PBB7tQEiAkEBIICQQEpBxc6Qt+3yq72uqPh+va35SPf/p2pdlRQKPdiAkEBIgJBASCAnIM22/CliRQEiAkEBIICQQko8AhARCAiEBQgIhgZBASICQQEggJBASICQQEggJhAQICYQEq/wAlWU/TkSOn0EAAAAASUVORK5CYII=" alt="QR Telegram"></div>
+          </a>
+          <p class="qr-sub">Telegram</p>
+        </div>
+        <a href="https://t.me/Sergei_A_Maslov" target="_blank" rel="noopener" class="btn-cta">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
+          <span>Telegram</span>
+        </a>
+      </div>
+
+      <!-- Max -->
+      <div class="cta-wrap">
+        <div class="cta-qr-popup">
+          <a href="https://max.ru/u/f9LHodD0cOL3kMzUr_ikktA0TkVGc-ooCVMJ4cTxOQSFnO0yOygUbK3px88" target="_blank" class="qr-link">
+            <div class="qr-wrap-p"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPYAAAD2AQAAAADNaUdlAAACgklEQVR4nO1ZUYrcMAx9igPz6dxgjmLfoEda9mYO9CI5QMH5HHBQedJ0t/RjdkopG8GKkMmMGZBlvacnRRSP7JgeLgNf6/8WH2jnPXUkVeTGZ20j+7GUESC+RVXp6l51q3wA0laTKrd2Av8+XBepAGasMwry67zXOTfsMp/Ev2fWc0NuAxjA7dqO5W///1nr8/1zX4aU7z/4mLZviYkUBb9FVZO2pE0t54chwvK/jDD8U/64bLEE8P9uZM5BIPAs/AhUNYD/nYRpVpB1cEctdf6OEPHvRRlwjKyJuVRGJhC4ls8f/8n4/2UGLlu9LcXhcCzMq7TVU/j30JSyQUcmBLTf4UD8UkucP38mYNXO4itLOa4KrNirI0ID6AdYtImCO2btIHi3r0H4v1jxIm0iN7rNOyLkDxh5Zr7VXHKpMz/lUArB/0q3eakOqjjT0iD5pxD5o6Z8yDykfd+C31OM+DdvvlJ38i/DqnAQ/TaRLbPepB4LjoVa4rLJpeOwpuYE/j2F39RNgloiDZMQDo0RI38Kxc8vzeP5H0S/TQBuC+vvIULyZPxXSqDra4z62xlzZx59I1LrBVKI/Onlt7FPe2dRJ6IQ/Ut+E5+sBd4IqJFqGP3TiVafohAC1G8lTP/VMah2SEQOARdyqUfxv/jwymQznXf9n0Lkjxuz3Y+AKDAiLTH6311EZEahfpB6XFXkJbEjA8e5n+/fk/NneMOlW019lcVmQTiFf0/MHyqwilRhIcZxbfxKOXcO/x6aGk/eW2Ajf6+83pSNz/ZvenI9M+ZAuZicGLuMnUOh0/j34fxZXTZbLabdZ3ETHtt0ovdfzXdhQOaJaID8ka/3pw/tf+fPT/vEHyxYkGfpAAAAAElFTkSuQmCC" alt="QR Max"></div>
+          </a>
+          <p class="qr-sub">Max</p>
+        </div>
+        <a href="https://max.ru/u/f9LHodD0cOL3kMzUr_ikktA0TkVGc-ooCVMJ4cTxOQSFnO0yOygUbK3px88" target="_blank" rel="noopener" class="btn-cta">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-6 9h-1.5V8.5L11 10.5 9.5 8.5V11H8V7h1.5L11 9l1.5-2H14v4z"/>
+          </svg>
+          <span>Max</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="container">
+    © 2026 · AI-сайт-экосистема для помогающих специалистов · Сергей Маслов
+  </div>
+</footer>
+
+<script>
+(function(){
+  var isTouchDevice=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
+  if(!isTouchDevice)return;
+  function hideAll(){document.querySelectorAll('.cta-qr-popup').forEach(function(p){p.style.opacity='0';p.style.transform='translateX(-50%) translateY(6px)';p.style.pointerEvents='none';});}
+  document.querySelectorAll('.cta-wrap').forEach(function(wrap){
+    var popup=wrap.querySelector('.cta-qr-popup');
+    var link=wrap.querySelector('.btn-cta');
+    link.addEventListener('click',function(e){
+      var isVisible=popup.style.opacity==='1';
+      if(!isVisible){e.preventDefault();hideAll();popup.style.opacity='1';popup.style.transform='translateX(-50%) translateY(0)';popup.style.pointerEvents='auto';}
+    });
+  });
+  document.addEventListener('click',function(e){if(!e.target.closest('.cta-wrap'))hideAll();});
+})();
+</script>
+</body>
+</html>
