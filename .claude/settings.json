@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where python:*)",
+      "Bash(powershell -Command \"Start-Process powershell -Verb RunAs -ArgumentList \\\\\"-Command netsh advfirewall firewall add rule name='Python HTTP Server' dir=in action=allow program='C:\\\\Users\\\\Сергей\\\\AppData\\\\Local\\\\Python\\\\bin\\\\python.exe' enable=yes profile=any\\\\\" -Wait\")"
+    ]
+  }
+}

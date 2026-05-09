@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR-код для Тарифов</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0a14;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 40px 36px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .sub {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  .url-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+  .url-label {
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #url-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: #a78bfa;
+    font-size: 13px;
+    font-family: inherit;
+    width: 100%;
+    min-width: 0;
+  }
+  #qr-wrap {
+    display: inline-flex;
+    padding: 14px;
+    background: #fff;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    box-shadow: 0 0 40px rgba(124,58,237,0.2);
+  }
+  #qr-wrap canvas { display: block; }
+  .btn-dl {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-dl:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(124,58,237,0.55);
+  }
+  .hint {
+    font-size: 12px;
+    color: #475569;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>QR-код страницы тарифов</h1>
+  <p class="sub">Введите ссылку на страницу — QR обновится автоматически.<br>Затем нажмите «Сохранить PNG».</p>
+
+  <div class="url-wrap">
+    <span class="url-label">URL →</span>
+    <input id="url-input" type="text" value="pricing.html" spellcheck="false">
+  </div>
+
+  <div id="qr-wrap">
+    <canvas id="qr-canvas"></canvas>
+  </div>
+
+  <button class="btn-dl" id="btn-save">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M12 3v13M7 11l5 5 5-5M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Сохранить PNG
+  </button>
+
+  <p class="hint">Файл сохранится как <strong style="color:#94a3b8">qr-pricing.png</strong><br>в папку загрузок браузера.</p>
+</div>
+
+<script>
+// ── QR generator (MIT, from vizitka.html) ──
+var GF_EXP=new Array(512),GF_LOG=new Array(256);
+(function(){
+  var x=1;
+  for(var i=0;i<256;i++){GF_EXP[i]=x;GF_LOG[x]=i;x<<=1;if(x&0x100)x^=0x11d;}
+  for(var i=256;i<512;i++)GF_EXP[i]=GF_EXP[i-256];
+})();
+function gfMul(a,b){return a===0||b===0?0:GF_EXP[(GF_LOG[a]+GF_LOG[b])%255]}
+function genPoly(ec){
+  var p=[1];
+  for(var i=0;i<ec;i++){var q=[1,GF_EXP[i]],r=[];for(var j=0;j<p.length+q.length-1;j++)r[j]=0;for(var j=0;j<p.length;j++)for(var k=0;k<q.length;k++)r[j+k]^=gfMul(p[j],q[k]);p=r;}
+  return p;
+}
+function polyMod(msg,gen){var out=msg.slice();for(var i=0;i<msg.length;i++){var c=out[i];if(c!==0)for(var j=1;j<gen.length;j++)out[i+j]^=gfMul(gen[j],c);}return out.slice(msg.length);}
+var VERSION_DATA=[null,{s:21,ec:7,bl:1,dc:16},{s:25,ec:10,bl:1,dc:28},{s:29,ec:15,bl:1,dc:44},{s:33,ec:20,bl:2,dc:32},{s:37,ec:26,bl:2,dc:43},{s:41,ec:18,bl:4,dc:27},{s:45,ec:20,bl:4,dc:31}];
+var CAPACITY_M=[0,14,26,44,64,86,108,124];
+function pickVersion(len){for(var v=1;v<=7;v++)if(len+2<=CAPACITY_M[v])return v;return 7;}
+var FORMAT_M=[0x5412,0x5125,0x5E7C,0x5B4B,0x45F9,0x40CE,0x4F97,0x4AA0];
+function makeBitMatrix(size){var m=[];for(var i=0;i<size;i++){m[i]=new Uint8Array(size);}return m;}
+function setFinder(m,r,c){for(var i=-1;i<=7;i++)for(var j=-1;j<=7;j++){if(r+i<0||r+i>=m.length||c+j<0||c+j>=m.length)continue;var v=(i>=0&&i<=6&&(j===0||j===6))||(j>=0&&j<=6&&(i===0||i===6))||(i>=2&&i<=4&&j>=2&&j<=4);m[r+i][c+j]=v?1:0;}}
+function setTiming(m,size){for(var i=8;i<size-8;i++){m[6][i]=m[i][6]=(i%2===0)?1:0;}}
+function setAlignPattern(m,r,c){for(var i=-2;i<=2;i++)for(var j=-2;j<=2;j++){var v=(i===-2||i===2||j===-2||j===2||(i===0&&j===0));m[r+i][c+j]=v?1:0;}}
+var ALIGN_POS=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38]];
+function buildQR(text){
+  var utf8=[];
+  for(var i=0;i<text.length;){var cp=text.codePointAt(i);if(cp<0x80){utf8.push(cp);}else if(cp<0x800){utf8.push(0xC0|(cp>>6),0x80|(cp&0x3F));}else if(cp<0x10000){utf8.push(0xE0|(cp>>12),0x80|((cp>>6)&0x3F),0x80|(cp&0x3F));}else{utf8.push(0xF0|(cp>>18),0x80|((cp>>12)&0x3F),0x80|((cp>>6)&0x3F),0x80|(cp&0x3F));}i+=cp>=0x10000?2:1;}
+  var dataLen=utf8.length;
+  var ver=pickVersion(dataLen);
+  var size=VERSION_DATA[ver].s;
+  var ecPerBlock=VERSION_DATA[ver].ec,numBlocks=VERSION_DATA[ver].bl,dcPerBlock=VERSION_DATA[ver].dc;
+  var bits=[];
+  function pushBits(val,n){for(var i=n-1;i>=0;i--)bits.push((val>>i)&1);}
+  pushBits(0b0100,4);pushBits(dataLen,8);
+  for(var i=0;i<utf8.length;i++)pushBits(utf8[i],8);
+  pushBits(0,4);while(bits.length%8!==0)bits.push(0);
+  var totalDC=dcPerBlock*numBlocks;
+  var bytes=[];for(var i=0;i<bits.length;i+=8)bytes.push(parseInt(bits.slice(i,i+8).join(''),2));
+  var pad=[0xEC,0x11];var pi=0;while(bytes.length<totalDC)bytes.push(pad[pi++%2]);
+  var gen=genPoly(ecPerBlock);var allEC=[];
+  for(var b=0;b<numBlocks;b++){var blk=bytes.slice(b*dcPerBlock,(b+1)*dcPerBlock);allEC.push(polyMod(blk,gen));}
+  var interleaved=[];
+  for(var i=0;i<dcPerBlock;i++)for(var b=0;b<numBlocks;b++)interleaved.push(bytes[b*dcPerBlock+i]);
+  for(var i=0;i<ecPerBlock;i++)for(var b=0;b<numBlocks;b++)interleaved.push(allEC[b][i]);
+  var dataStream=[];
+  for(var i=0;i<interleaved.length;i++)for(var j=7;j>=0;j--)dataStream.push((interleaved[i]>>j)&1);
+  var rem=[0,7,7,7,7,7,0];for(var i=0;i<rem[ver];i++)dataStream.push(0);
+  var m=makeBitMatrix(size),reserved=makeBitMatrix(size);
+  setFinder(m,0,0);setFinder(m,0,size-7);setFinder(m,size-7,0);
+  for(var i=0;i<8;i++){[0,size-8].forEach(function(c){if(c<size){m[7][c+i]=0;m[i][c+7<size?c+7:size-1-i]=0;}});}
+  for(var r=0;r<9;r++)for(var c=0;c<9;c++){reserved[r][c]=1;}
+  for(var r=0;r<9;r++)for(var c=size-8;c<size;c++){reserved[r][c]=1;}
+  for(var r=size-8;r<size;r++)for(var c=0;c<9;c++){reserved[r][c]=1;}
+  setTiming(m,size);
+  for(var i=8;i<size-8;i++){reserved[6][i]=1;reserved[i][6]=1;}
+  var ap=ALIGN_POS[ver];
+  if(ap.length>=2){for(var ai=0;ai<ap.length;ai++)for(var aj=0;aj<ap.length;aj++){var r=ap[ai],c=ap[aj];if(!reserved[r][c]){setAlignPattern(m,r,c);for(var di=-2;di<=2;di++)for(var dj=-2;dj<=2;dj++)reserved[r+di][c+dj]=1;}}}
+  m[size-8][8]=1;reserved[size-8][8]=1;
+  for(var i=0;i<9;i++){if(i!==6){reserved[i][8]=1;reserved[8][i]=1;}}
+  for(var i=0;i<8;i++){reserved[size-1-i][8]=1;reserved[8][size-8+i]=1;}
+  var maskFn=function(r,c){return(r+c)%2===0};
+  var bi=0,up=true;
+  for(var col=size-1;col>=0;col-=2){
+    if(col===6)col--;
+    for(var row=0;row<size;row++){var r=up?size-1-row:row;for(var dc=0;dc<2;dc++){var c=col-dc;if(!reserved[r][c]){var bit=bi<dataStream.length?dataStream[bi++]:0;m[r][c]=(bit^(maskFn(r,c)?1:0));}}}
+    up=!up;
+  }
+  var fi=FORMAT_M[0];var fmts=[];for(var i=0;i<15;i++)fmts.push((fi>>(14-i))&1);
+  var fi_pos=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+  for(var i=0;i<15;i++){m[fi_pos[i][0]][fi_pos[i][1]]=fmts[i];}
+  for(var i=0;i<8;i++){m[8][size-1-i]=fmts[i];}
+  m[size-8][8]=1;
+  for(var i=0;i<7;i++){m[size-7+i][8]=fmts[8+i];}
+  return{matrix:m,size:size};
+}
+
+// ── Render on canvas ──
+var canvas = document.getElementById('qr-canvas');
+var input  = document.getElementById('url-input');
+
+function draw(text) {
+  var result = buildQR(text);
+  var size   = result.size;
+  var matrix = result.matrix;
+  var px     = 8;
+  var quiet  = 4;
+  var total  = (size + quiet * 2) * px;
+  canvas.width  = total;
+  canvas.height = total;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, total, total);
+  ctx.fillStyle = '#000000';
+  for (var r = 0; r < size; r++) {
+    for (var c = 0; c < size; c++) {
+      if (matrix[r][c]) {
+        ctx.fillRect((c + quiet) * px, (r + quiet) * px, px, px);
+      }
+    }
+  }
+}
+
+draw(input.value);
+
+// Live update
+var debounce;
+input.addEventListener('input', function() {
+  clearTimeout(debounce);
+  debounce = setTimeout(function() { draw(input.value); }, 300);
+});
+
+// Download
+document.getElementById('btn-save').addEventListener('click', function() {
+  draw(input.value);
+  var link = document.createElement('a');
+  link.download = 'qr-pricing.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+</script>
+</body>
+</html>

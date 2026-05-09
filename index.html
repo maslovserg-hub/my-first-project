@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Страницы проекта — QR-доступ</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0a14;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 48px 20px 64px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .sub {
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.7;
+    margin-bottom: 40px;
+  }
+  .sub strong { color: #a78bfa; font-weight: 600; }
+
+  /* Три карточки строго в ряд, без перетекания */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 24px 20px 28px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: border-color 0.25s, transform 0.25s;
+  }
+  .card:hover {
+    border-color: rgba(124,58,237,0.4);
+    transform: translateY(-4px);
+  }
+
+  .card-icon { font-size: 26px; }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .card-url {
+    font-size: 11px;
+    color: #475569;
+    word-break: break-all;
+    line-height: 1.4;
+  }
+
+  /* Белый фон для QR — обязательная зона для сканирования */
+  .qr-wrap {
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px;
+    width: 100%;
+    max-width: 200px;
+  }
+  .qr-wrap img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a78bfa;
+    text-decoration: none;
+    padding: 7px 16px;
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 50px;
+    transition: background 0.2s, border-color 0.2s;
+    margin-top: 2px;
+  }
+  .card-link:hover {
+    background: rgba(124,58,237,0.12);
+    border-color: rgba(167,139,250,0.5);
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    font-size: 12px;
+    color: #1e293b;
+  }
+
+  /* На планшете/мобильном — одна колонка */
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+      max-width: 320px;
+    }
+    .qr-wrap { max-width: 240px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Страницы проекта</h1>
+<p class="sub">
+  Компьютер и телефон — в одной Wi-Fi сети.<br>
+  Сервер: <strong id="server-addr">—</strong><br>
+  Наведите камеру на QR и переходите.
+</p>
+
+<div class="grid" id="pages-grid"></div>
+
+<p class="footer">Локальный сервер · только для разработки</p>
+
+<script>
+var base = 'http://' + location.host;
+document.getElementById('server-addr').textContent = base;
+
+var pages = [
+  { icon: '🚀', title: 'Лендинг',  file: 'landing.html'  },
+  { icon: '💳', title: 'Тарифы',   file: 'pricing.html'  },
+  { icon: '👤', title: 'Визитка',  file: 'vizitka.html'  },
+];
+
+var grid = document.getElementById('pages-grid');
+
+pages.forEach(function(p) {
+  var url = base + '/' + p.file;
+
+  // QR через надёжный публичный API (размер 400×400, ECC=M)
+  var qrSrc = 'https://api.qrserver.com/v1/create-qr-code/'
+    + '?size=400x400&ecc=M&margin=0&data=' + encodeURIComponent(url);
+
+  var card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML =
+    '<div class="card-icon">' + p.icon + '</div>' +
+    '<div class="card-title">' + p.title + '</div>' +
+    '<div class="card-url">' + url + '</div>' +
+    '<div class="qr-wrap"><img src="' + qrSrc + '" alt="QR ' + p.title + '" loading="lazy"></div>' +
+    '<a href="' + p.file + '" class="card-link">Открыть →</a>';
+
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

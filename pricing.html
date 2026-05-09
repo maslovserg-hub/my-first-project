@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тарифы — AI-сайт для помогающих специалистов</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --grad-bg: linear-gradient(135deg, #0a0a14 0%, #0d1025 40%, #0f0a1e 70%, #080d1a 100%);
+    --accent: #7c3aed;
+    --accent2: #3b82f6;
+    --green: #10b981;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: rgba(255,255,255,0.08);
+    --card-bg: rgba(255,255,255,0.04);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--grad-bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── STARS BG ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 15% 25%, rgba(167,139,250,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 12%, rgba(96,165,250,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 82% 58%, rgba(52,211,153,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 8%  72%, rgba(167,139,250,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 42% 88%, rgba(96,165,250,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 93% 38%, rgba(52,211,153,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 55%, rgba(167,139,250,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(96,165,250,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 40%, rgba(52,211,153,0.15) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: relative; z-index: 10;
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .nav-logo {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+  }
+  .nav-logo:hover { opacity: 1; }
+  .nav-logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa);
+    box-shadow: 0 0 8px rgba(167,139,250,0.6);
+  }
+
+  .nav-back {
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--text); }
+  .nav-back svg { flex-shrink: 0; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 20px 60px;
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 18px;
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.35);
+    border-radius: 100px;
+    font-size: 12px;
+    color: #a78bfa;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    animation: fadeDown 0.7s 0.1s ease both;
+  }
+
+  .grad-text {
+    background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 auto;
+    animation: fadeDown 0.7s 0.2s ease both;
+  }
+
+  /* ── TOGGLE (month/year) ── */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 40px 0 56px;
+    animation: fadeDown 0.7s 0.3s ease both;
+    font-size: 14px;
+  }
+
+  .toggle-label { color: var(--muted); transition: color 0.2s; }
+  .toggle-label.active { color: var(--text); font-weight: 600; }
+
+  .toggle {
+    width: 48px; height: 26px;
+    background: rgba(124,58,237,0.25);
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 100px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.25s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: rgba(124,58,237,0.55); }
+  .toggle-knob {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.25s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  .toggle.on .toggle-knob { transform: translateX(22px); }
+
+  .save-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 100px;
+    font-size: 12px;
+    color: #34d399;
+  }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: start;
+    padding-bottom: 80px;
+    animation: fadeUp 0.8s 0.35s ease both;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 28px 32px;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  /* Средняя карточка — выделена */
+  .card.featured {
+    background: linear-gradient(145deg, rgba(124,58,237,0.15) 0%, rgba(59,130,246,0.08) 100%);
+    border-color: rgba(124,58,237,0.45);
+    transform: translateY(-10px);
+    box-shadow: 0 20px 60px rgba(124,58,237,0.2), 0 0 0 1px rgba(124,58,237,0.2);
+  }
+  .card.featured:hover {
+    transform: translateY(-16px);
+    box-shadow: 0 32px 80px rgba(124,58,237,0.3);
+  }
+
+  .popular-tag {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, #7c3aed, #3b82f6);
+    border-radius: 100px;
+    padding: 5px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.45);
+  }
+
+  .card-tier {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .card.featured .card-tier { color: #a78bfa; }
+
+  .card-name {
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .card-desc {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .card-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .price-num {
+    font-size: clamp(2rem, 4.5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1;
+  }
+  .price-currency {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .price-old {
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: line-through;
+    margin-left: 8px;
+  }
+  .price-period {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  .features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .features li .icon {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    margin-top: 1px;
+  }
+
+  .features li .icon.check { color: #34d399; }
+  .features li .icon.minus { color: rgba(255,255,255,0.2); }
+
+  .features li .feat-text { color: var(--text); }
+  .features li.unavailable .feat-text { color: var(--muted); opacity: 0.5; }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  }
+  .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+  .btn:active { transform: translateY(0); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: var(--text);
+  }
+  .btn-outline:hover {
+    border-color: rgba(167,139,250,0.45);
+    box-shadow: 0 0 20px rgba(124,58,237,0.15);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 8px 32px rgba(124,58,237,0.5);
+  }
+
+  /* ── FAQ ── */
+  .faq-section {
+    padding: 0 0 80px;
+    animation: fadeUp 0.8s 0.5s ease both;
+  }
+
+  .section-title {
+    font-size: clamp(1.4rem, 3.5vw, 2rem);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .faq-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.25s;
+  }
+  .faq-item:hover { border-color: rgba(167,139,250,0.25); }
+  .faq-item.open { border-color: rgba(124,58,237,0.4); }
+
+  .faq-q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    gap: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .faq-chevron {
+    flex-shrink: 0;
+    width: 20px; height: 20px;
+    color: var(--muted);
+    transition: transform 0.25s, color 0.25s;
+  }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); color: #a78bfa; }
+
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.25s ease;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    padding: 0 22px;
+  }
+  .faq-item.open .faq-a {
+    max-height: 300px;
+    padding: 0 22px 18px;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    padding: 0 0 100px;
+    text-align: center;
+    animation: fadeUp 0.8s 0.6s ease both;
+  }
+
+  .cta-box {
+    background: linear-gradient(145deg, rgba(124,58,237,0.12) 0%, rgba(59,130,246,0.06) 100%);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 24px;
+    padding: clamp(40px, 6vw, 64px) clamp(24px, 5vw, 80px);
+  }
+
+  .cta-box h2 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .cta-box p {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 32px;
+  }
+
+  .cta-btns {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-btns .btn {
+    width: auto;
+    padding: 14px 32px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 860px) {
+    .cards {
+      grid-template-columns: 1fr;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .card.featured { transform: none; }
+    .card.featured:hover { transform: translateY(-6px); }
+  }
+
+  @media (max-width: 480px) {
+    .hero { padding: 56px 20px 44px; }
+    .toggle-wrap { margin: 28px 0 40px; }
+    .cards { padding-bottom: 56px; }
+    .card { padding: 32px 22px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="landing.html" class="nav-logo">
+    <span class="nav-logo-dot"></span>
+    AI-сайт для специалистов
+  </a>
+  <a href="landing.html" class="nav-back">
+    <svg class="nav-back svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    На главную
+  </a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">Тарифы</div>
+  <h1>Выберите свой<br><span class="grad-text">формат присутствия</span></h1>
+  <p class="hero-sub">Всё, что нужно психологу, коучу или терапевту — чтобы сайт работал на вас, а не вы на него.</p>
+
+  <!-- TOGGLE -->
+  <div class="toggle-wrap">
+    <span class="toggle-label active" id="lbl-month">Разовая оплата</span>
+    <div class="toggle" id="billing-toggle">
+      <span class="toggle-knob"></span>
+    </div>
+    <span class="toggle-label" id="lbl-year">Рассрочка&nbsp;<span class="save-badge">−20%</span></span>
+  </div>
+</div>
+
+<!-- PRICING CARDS -->
+<div class="container">
+  <div class="cards">
+
+    <!-- ── СТАРТ ── -->
+    <div class="card">
+      <div class="card-tier">Тариф 1</div>
+      <div class="card-name">Старт</div>
+      <div class="card-desc">Минималистичный сайт, чтобы вас нашли и записались. Идеально для начала.</div>
+      <div class="card-price">
+        <span class="price-currency">₽</span>
+        <span class="price-num" data-base="15000" data-install="2700">15 000</span>
+      </div>
+      <div class="price-period" id="period-start">единоразово</div>
+      <hr class="divider">
+      <ul class="features">
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Одностраничный лендинг</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Уникальный дизайн под вас</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Мобильная адаптация</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Форма записи / контактов</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Готово за 5–7 дней</span>
+        </li>
+        <li class="unavailable">
+          <svg class="icon minus" viewBox="0 0 18 18" fill="none"><path d="M4 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="feat-text">AI-чат для посетителей</span>
+        </li>
+        <li class="unavailable">
+          <svg class="icon minus" viewBox="0 0 18 18" fill="none"><path d="M4 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="feat-text">Цифровая визитка</span>
+        </li>
+        <li class="unavailable">
+          <svg class="icon minus" viewBox="0 0 18 18" fill="none"><path d="M4 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="feat-text">Поддержка 3 месяца</span>
+        </li>
+      </ul>
+      <a href="#contact" class="btn btn-outline">Начать</a>
+    </div>
+
+    <!-- ── ПРО ── -->
+    <div class="card featured">
+      <div class="popular-tag">✦ Популярный</div>
+      <div class="card-tier">Тариф 2</div>
+      <div class="card-name"><span class="grad-text">Про</span></div>
+      <div class="card-desc">Полноценный сайт с AI-помощником, который отвечает клиентам вместо вас.</div>
+      <div class="card-price">
+        <span class="price-currency">₽</span>
+        <span class="price-num" data-base="35000" data-install="5800">35 000</span>
+        <span class="price-old" id="old-pro" style="display:none">43 750</span>
+      </div>
+      <div class="price-period" id="period-pro">единоразово</div>
+      <hr class="divider">
+      <ul class="features">
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">До 4 страниц сайта</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Премиум-дизайн и анимации</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Мобильная адаптация</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">AI-чат под вашу тематику</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Онлайн-запись к специалисту</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Цифровая визитка в подарок</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Базовое SEO</span>
+        </li>
+        <li class="unavailable">
+          <svg class="icon minus" viewBox="0 0 18 18" fill="none"><path d="M4 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="feat-text">Поддержка 3 месяца</span>
+        </li>
+      </ul>
+      <a href="#contact" class="btn btn-primary">Выбрать Про</a>
+    </div>
+
+    <!-- ── ПОД КЛЮЧ ── -->
+    <div class="card">
+      <div class="card-tier">Тариф 3</div>
+      <div class="card-name">Под ключ</div>
+      <div class="card-desc">Максимальный результат. Сайт, визитка, AI-ассистент и поддержка — всё сделано за вас.</div>
+      <div class="card-price">
+        <span class="price-currency">₽</span>
+        <span class="price-num" data-base="75000" data-install="12500">75 000</span>
+        <span class="price-old" id="old-keys" style="display:none">93 750</span>
+      </div>
+      <div class="price-period" id="period-keys">единоразово</div>
+      <hr class="divider">
+      <ul class="features">
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">До 8 страниц сайта</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Эксклюзивный дизайн</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Мобильная адаптация</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">AI-ассистент с обучением под вас</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Онлайн-запись + напоминания</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Цифровая визитка</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">SEO + аналитика</span>
+        </li>
+        <li>
+          <svg class="icon check" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.5L7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="feat-text">Поддержка 3 месяца</span>
+        </li>
+      </ul>
+      <a href="#contact" class="btn btn-outline">Получить всё</a>
+    </div>
+
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <h2 class="section-title">Частые вопросы</h2>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Что такое AI-чат на сайте?
+          <svg class="faq-chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="faq-a">Это умный помощник, который отвечает на вопросы ваших посетителей 24/7. Он знает о ваших услугах, ценах и подходе — и помогает клиенту сделать шаг к записи, даже когда вы заняты или спите.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Нужны ли мне технические знания?
+          <svg class="faq-chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="faq-a">Никаких. Вы рассказываете о себе и своей работе — я создаю сайт. Для внесения правок тоже не нужен программист: достаточно написать мне в Telegram.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Как долго делается сайт?
+          <svg class="faq-chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="faq-a">Тариф «Старт» — 5–7 дней. «Про» — 10–14 дней. «Под ключ» — до 3–4 недель. Точные сроки зависят от скорости обратной связи с вашей стороны.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Можно ли сменить тариф позже?
+          <svg class="faq-chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="faq-a">Да. Начать можно со «Старта», а потом доплатить разницу и перейти на «Про» или «Под ключ». Ничего лишнего переделывать не придётся.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          Что входит в поддержку 3 месяца?
+          <svg class="faq-chevron" viewBox="0 0 20 20" fill="none"><path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="faq-a">Правки текстов и изображений, небольшие изменения в блоках, обновление цен и расписания, технические вопросы — всё это включено в тариф «Под ключ» без доплат в течение трёх месяцев после запуска.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section" id="contact">
+    <div class="cta-box">
+      <h2>Не знаете, что выбрать?<br><span class="grad-text">Напишите — разберёмся вместе</span></h2>
+      <p>Расскажите о себе и своей работе, и я подскажу, какой тариф подойдёт именно вам. Без продажи ненужного.</p>
+      <div class="cta-btns">
+        <a href="https://t.me/s_maslov" class="btn btn-primary" target="_blank" rel="noopener">Написать в Telegram</a>
+        <a href="landing.html" class="btn btn-outline">На главную</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── FAQ accordion ──
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // ── Billing toggle ──
+  const toggle = document.getElementById('billing-toggle');
+  const lblMonth = document.getElementById('lbl-month');
+  const lblYear  = document.getElementById('lbl-year');
+  let installment = false;
+
+  function formatNum(n) {
+    return n.toLocaleString('ru-RU');
+  }
+
+  function updatePrices() {
+    document.querySelectorAll('.price-num').forEach(el => {
+      const base    = parseInt(el.dataset.base, 10);
+      const monthly = parseInt(el.dataset.install, 10);
+      el.textContent = installment ? formatNum(monthly) : formatNum(base);
+    });
+
+    // old price visibility for Pro and Keys
+    const oldPro  = document.getElementById('old-pro');
+    const oldKeys = document.getElementById('old-keys');
+    if (oldPro)  oldPro.style.display  = installment ? 'none' : 'none'; // hidden always — показываем только при рассрочке
+    if (oldKeys) oldKeys.style.display = installment ? 'none' : 'none';
+
+    const periodText = installment ? 'в месяц · 6 месяцев' : 'единоразово';
+    ['period-start', 'period-pro', 'period-keys'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = periodText;
+    });
+
+    lblMonth.classList.toggle('active', !installment);
+    lblYear.classList.toggle('active', installment);
+    toggle.classList.toggle('on', installment);
+  }
+
+  toggle.addEventListener('click', () => {
+    installment = !installment;
+    updatePrices();
+  });
+
+  // ── Intersection observer for card animations ──
+  const cards = document.querySelectorAll('.card');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.style.opacity = '1', i * 80);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  cards.forEach(c => {
+    c.style.opacity = '0';
+    c.style.transition += ', opacity 0.5s ease';
+    observer.observe(c);
+  });
+</script>
+</body>
+</html>

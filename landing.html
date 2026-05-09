@@ -323,6 +323,31 @@
     50%       { box-shadow: 0 0 32px rgba(124,58,237,0.7), 0 0 60px rgba(59,130,246,0.35); }
   }
 
+  /* ── PRICING LINK ── */
+  .btn-pricing {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 36px;
+    padding: 14px 32px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #a78bfa;
+    text-decoration: none;
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.35);
+    border-radius: 50px;
+    transition: background 0.25s, border-color 0.25s, box-shadow 0.25s, gap 0.25s, transform 0.2s;
+  }
+  .btn-pricing:hover {
+    background: rgba(124,58,237,0.2);
+    border-color: rgba(167,139,250,0.6);
+    box-shadow: 0 0 28px rgba(124,58,237,0.25);
+    gap: 16px;
+    transform: translateY(-2px);
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 640px) {
     .hero { padding: 70px 16px 60px; }
@@ -454,6 +479,11 @@
   <div class="container">
     <h2>Хотите такой сайт для себя?</h2>
     <p>Обсудим ваш проект, покажем примеры и рассчитаем стоимость за 15 минут</p>
+
+    <a href="pricing.html" class="btn-pricing">
+      <span>Посмотреть тарифы</span>
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
 
         <div class="cta-row">
 
