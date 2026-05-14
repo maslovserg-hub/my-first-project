@@ -1153,8 +1153,11 @@ document.getElementById('micBtn').addEventListener('click', () => {
 // ───────────────────────────────────────────────────────────
 async function pickFolder() {
   if (state.pickerBusy) return;
-  if (!window.showDirectoryPicker) {
-    showToast('Выбор папки не поддерживается этим браузером. Жми «Файлы».');
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!window.showDirectoryPicker || isMobile) {
+    document.getElementById('folderMeta').textContent =
+      'На телефоне выбор папки не работает — жми «Файлы»';
+    showToast('На телефоне жми «Файлы» — он работает везде');
     return;
   }
   state.pickerBusy = true;
