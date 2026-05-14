@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a14">
+<title>Контроль нормативки</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --grad-bg: linear-gradient(135deg, #0a0a14 0%, #0d1025 40%, #0f0a1e 70%, #080d1a 100%);
+    --grad-text: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+    --grad-btn: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+    --card: rgba(255,255,255,0.04);
+    --card-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --accent: #7c3aed;
+    --accent2: #3b82f6;
+    --green: #10b981;
+    --red: #ef4444;
+    --orange: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --dim: #64748b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--grad-bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    overflow-x: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(167,139,250,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 15%, rgba(96,165,250,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 60%, rgba(52,211,153,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 10% 70%, rgba(167,139,250,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 85%, rgba(96,165,250,0.25) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .app {
+    position: relative; z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 16px 100px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 16px 0 20px;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 5vw, 1.9rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  header h1 .grad {
+    background: var(--grad-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* PRIVACY BANNER */
+  .privacy {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 0.82rem;
+    color: #fcd34d;
+  }
+  .privacy summary {
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+  }
+  .privacy summary::-webkit-details-marker { display: none; }
+  .privacy summary::before {
+    content: 'ⓘ';
+    font-size: 1.1rem;
+  }
+  .privacy[open] summary { margin-bottom: 10px; }
+  .privacy ul { margin-left: 18px; color: #fde68a; }
+  .privacy li { margin-bottom: 4px; }
+
+  /* MODE TABS */
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .tab.active {
+    background: var(--grad-btn);
+    color: white;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+  }
+
+  /* MIC AREA */
+  .mic-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+  .mic-btn {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    border: none;
+    background: var(--grad-btn);
+    color: white;
+    font-size: 36px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mic-btn:active { transform: scale(0.95); }
+  .mic-btn.recording {
+    background: linear-gradient(135deg, #ef4444, #f97316);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .mic-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5), 0 0 0 0 rgba(239, 68, 68, 0.6); }
+    50%      { box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5), 0 0 0 18px rgba(239, 68, 68, 0); }
+  }
+  .mic-hint {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+
+  /* INPUT */
+  .query-box {
+    width: 100%;
+    min-height: 96px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    color: var(--text);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+  }
+  .query-box:focus {
+    outline: none;
+    border-color: rgba(124, 58, 237, 0.5);
+    background: var(--card-hover);
+  }
+  .query-box::placeholder { color: var(--dim); }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+  .btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--grad-btn);
+    color: white;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+  }
+  .btn-secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--card-hover); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* SOURCES */
+  .sources {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 18px;
+  }
+  .sources-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .source-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .source-row:last-child { border-bottom: none; }
+  .source-info { flex: 1; min-width: 0; }
+  .source-name { font-size: 0.92rem; font-weight: 600; }
+  .source-meta { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+  .source-controls { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .toggle {
+    position: relative;
+    width: 44px; height: 24px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle.on::after { transform: translateX(20px); }
+
+  .pill-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pill-btn:hover { background: rgba(255,255,255,0.12); }
+  .pill-btn.danger { color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
+
+  /* INTERNET BUTTONS */
+  .internet-search {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 18px;
+  }
+  .internet-search-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .internet-search-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  @media (max-width: 480px) {
+    .internet-search-buttons { grid-template-columns: 1fr; }
+  }
+
+  /* RESULTS */
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 22px 0 12px;
+  }
+  .results-header h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .results-count {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .result {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    transition: background 0.2s;
+  }
+  .result.from-folder { border-left-color: var(--green); }
+  .result.from-builtin { border-left-color: var(--accent2); }
+  .result-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .result-doc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .result-score {
+    font-size: 0.75rem;
+    color: var(--green);
+    padding: 2px 7px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .result-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .result-text {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .result-text mark {
+    background: rgba(167, 139, 250, 0.25);
+    color: #ddd6fe;
+    padding: 1px 3px;
+    border-radius: 3px;
+  }
+  .result-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 30px 16px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .empty .icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; }
+
+  /* HISTORY */
+  .history {
+    margin-top: 30px;
+  }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    gap: 8px;
+  }
+  .history-item:hover { background: var(--card-hover); }
+  .history-text {
+    flex: 1;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .history-meta {
+    font-size: 0.72rem;
+    color: var(--dim);
+    flex-shrink: 0;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+  }
+
+  /* MODAL */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 18, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #131428;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+  .modal-content p { font-size: 0.9rem; color: var(--muted); margin-bottom: 10px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+  .copy-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 12px;
+  }
+
+  /* LOADER */
+  .loader {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--grad-btn);
+    width: 0%;
+    transition: width 0.2s;
+  }
+
+  /* MIC ICON */
+  .mic-svg { width: 38px; height: 38px; fill: white; }
+
+  /* SMALL SCREENS */
+  @media (max-width: 380px) {
+    .app { padding: 12px 12px 100px; }
+    .mic-btn { width: 76px; height: 76px; }
+    .mic-svg { width: 32px; height: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1><span class="grad">Контроль нормативки</span></h1>
+    <p>Голосовой поиск по ГОСТам, СП и твоим документам</p>
+  </header>
+
+  <details class="privacy">
+    <summary>Конфиденциальность — прочитай перед использованием</summary>
+    <ul>
+      <li>Текст и файлы <b>не покидают твой телефон</b>: поиск идёт локально в браузере.</li>
+      <li>Распознавание голоса работает через <b>сервисы Google</b> — не произноси коммерческую тайну, ФИО, номера договоров.</li>
+      <li>Кнопки «Искать в интернете» открывают внешние сайты — твой запрос уходит в Яндекс / cntd.ru.</li>
+      <li>История запросов хранится <b>только в этом браузере</b> (localStorage), можно очистить.</li>
+    </ul>
+  </details>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-mode="violation" role="tab">Нарушение</button>
+    <button class="tab" data-mode="question" role="tab">Вопрос</button>
+  </div>
+
+  <div class="mic-area">
+    <button class="mic-btn" id="micBtn" aria-label="Начать запись">
+      <svg class="mic-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+      </svg>
+    </button>
+    <div class="mic-hint" id="micHint">Нажми и говори</div>
+  </div>
+
+  <textarea class="query-box" id="queryBox" placeholder="…или впиши руками. Например: трещина в кирпичной кладке несущей стены"></textarea>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="searchBtn">Найти</button>
+    <button class="btn btn-secondary" id="clearBtn">Очистить</button>
+  </div>
+
+  <div class="sources">
+    <div class="sources-title">Где искать</div>
+
+    <div class="source-row">
+      <div class="source-info">
+        <div class="source-name">Встроенная база</div>
+        <div class="source-meta" id="builtinMeta">—</div>
+      </div>
+      <div class="toggle on" id="toggleBuiltin" data-source="builtin"></div>
+    </div>
+
+    <div class="source-row">
+      <div class="source-info">
+        <div class="source-name">Папка на телефоне</div>
+        <div class="source-meta" id="folderMeta">Не подключена</div>
+      </div>
+      <div class="source-controls">
+        <button class="pill-btn" id="pickFolderBtn">Подключить</button>
+        <div class="toggle on" id="toggleFolder" data-source="folder"></div>
+      </div>
+    </div>
+
+    <div class="source-row" id="folderProgressRow" style="display:none;">
+      <div class="source-info" style="flex:1">
+        <div class="source-meta" id="folderProgressText">Индексирую…</div>
+        <div class="progress"><div class="progress-bar" id="folderProgressBar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="internet-search">
+    <div class="internet-search-title">Открыть запрос в интернете</div>
+    <div class="internet-search-buttons">
+      <button class="btn btn-secondary" id="searchYandex">Яндекс</button>
+      <button class="btn btn-secondary" id="searchCntd">cntd.ru</button>
+      <button class="btn btn-secondary" id="searchDocsCntd">docs.cntd.ru</button>
+    </div>
+  </div>
+
+  <div class="results-header">
+    <h2>Результаты</h2>
+    <span class="results-count" id="resultsCount"></span>
+  </div>
+  <div id="results">
+    <div class="empty">
+      <div class="icon">🔎</div>
+      <div>Наговори или впиши запрос — и нажми «Найти»</div>
+    </div>
+  </div>
+
+  <div class="history" id="historyBlock" style="display:none;">
+    <div class="results-header">
+      <h2>История</h2>
+      <button class="pill-btn danger" id="clearHistoryBtn">Очистить</button>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="copyModal">
+  <div class="modal-content">
+    <h3>Готовая запись для акта</h3>
+    <p>Скопируй и вставь в свой документ.</p>
+    <div class="copy-block" id="copyBlockText"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="doCopyBtn">Скопировать</button>
+      <button class="btn btn-secondary" id="closeCopyBtn">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script src="pdf.min.js"></script>
+<script>
+// ───────────────────────────────────────────────────────────
+// КОНФИГ pdf.js
+// ───────────────────────────────────────────────────────────
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+}
+
+// ───────────────────────────────────────────────────────────
+// ВСТРОЕННАЯ БАЗА НОРМАТИВНЫХ ДОКУМЕНТОВ
+// (Краткие выдержки для прототипа. Замени/дополни своими.)
+// ───────────────────────────────────────────────────────────
+const BUILTIN_BASE = [
+  {
+    doc: 'СП 70.13330.2012',
+    fullTitle: 'Несущие и ограждающие конструкции',
+    items: [
+      { id: '5.16.3', title: 'Защитный слой бетона',
+        text: 'Толщина защитного слоя бетона должна обеспечивать совместную работу арматуры с бетоном на всех стадиях работы конструкции, а также защиту арматуры от внешних воздействий. Отклонения толщины защитного слоя бетона не должны превышать значений, установленных проектной документацией и ГОСТ.' },
+      { id: '7.2.1', title: 'Допуски кирпичной кладки',
+        text: 'Отклонение поверхностей и углов кладки от вертикали на один этаж — не более 10 мм, на здание высотой более двух этажей — не более 30 мм. Отклонение рядов кладки от горизонтали на 10 м длины стены — не более 15 мм.' },
+      { id: '7.3.5', title: 'Толщина швов кладки',
+        text: 'Толщина горизонтальных швов кирпичной кладки должна быть 12 мм, вертикальных — 10 мм. Допускаемые отклонения от проектной толщины швов: горизонтальных +3/-2 мм, вертикальных ±2 мм. Не допускаются пустошовка более 15 мм без проектного обоснования.' },
+      { id: '5.18.16', title: 'Распалубка бетонных конструкций',
+        text: 'Распалубливание загруженных конструкций, в том числе от вышележащих конструкций, допускается при достижении бетоном прочности не менее 70% проектной. Распалубливание ненагруженных конструкций возможно при прочности не менее 50% от проектной, если иное не предусмотрено проектом.' },
+      { id: '5.16.7', title: 'Уход за свежеуложенным бетоном',
+        text: 'Сразу после укладки бетонная смесь должна быть защищена от потери влаги. В жаркую и сухую погоду открытые поверхности бетона должны увлажняться или укрываться влагоудерживающими материалами в течение не менее 7 суток для бетонов на портландцементе.' },
+    ]
+  },
+  {
+    doc: 'СП 71.13330.2017',
+    fullTitle: 'Изоляционные и отделочные покрытия',
+    items: [
+      { id: '7.2.13', title: 'Допуски штукатурки',
+        text: 'Отклонения оштукатуренных поверхностей от вертикали и горизонтали при простой штукатурке — не более 3 мм на 1 м, при улучшенной — не более 2 мм на 1 м, при высококачественной — не более 1 мм на 1 м. Местные неровности при простой штукатурке — не более 3 мм глубиной/высотой, при высококачественной — не более 2 мм.' },
+      { id: '7.4.4', title: 'Малярные работы',
+        text: 'Окрашенные поверхности должны иметь однотонную фактуру (матовую или глянцевую). Не допускаются отслоения, морщины, пятна, потёки, истирания, неровности, следы кисти и валика, заметные с расстояния 3 м.' },
+      { id: '7.6.6', title: 'Облицовка плиткой',
+        text: 'Отклонения облицованной поверхности от вертикали — не более 1,5 мм на 1 м; уступы между плитками — не более 0,5 мм; ширина межплиточных швов — не более 6 мм при кладке без рамки и не более 2,5 мм с рамкой. Швы должны быть одинаковыми по толщине, прямолинейными, заполненными по всей длине.' },
+      { id: '8.14.1', title: 'Полы из керамической плитки',
+        text: 'Уклон пола от заданного — не более 0,2% соответствующего размера помещения и не более 50 мм. Отклонение поверхности покрытия от плоскости — не более 4 мм при контроле двухметровой рейкой.' },
+    ]
+  },
+  {
+    doc: 'СП 48.13330.2019',
+    fullTitle: 'Организация строительства',
+    items: [
+      { id: '6.1.3', title: 'Журналы работ',
+        text: 'Лицо, осуществляющее строительство, обязано вести общий журнал работ, специальные журналы работ, журнал входного контроля материалов, журнал авторского надзора. Записи в журналах ведутся ежедневно лицами, ответственными за выполнение работ.' },
+      { id: '7.1.2', title: 'Входной контроль материалов',
+        text: 'При приёмке материалов, изделий и конструкций проверяется: наличие документов о качестве (паспортов, сертификатов), соответствие их характеристик требованиям проекта и нормативных документов, целостность упаковки и маркировки. Не допускается применение материалов без документов о качестве.' },
+      { id: '7.4.1', title: 'Скрытые работы',
+        text: 'Освидетельствование скрытых работ оформляется актом до начала производства последующих работ. К освидетельствованию должны привлекаться представители заказчика, лица, осуществляющего строительство, проектной организации и при необходимости представители органов государственного надзора.' },
+      { id: '8.2.1', title: 'Геодезический контроль',
+        text: 'В процессе строительства должен проводиться операционный геодезический контроль точности геометрических параметров зданий и сооружений. Результаты контроля фиксируются исполнительными геодезическими схемами.' },
+    ]
+  },
+  {
+    doc: 'ГОСТ 31937-2024',
+    fullTitle: 'Здания и сооружения. Правила обследования и мониторинга',
+    items: [
+      { id: '5.1.4', title: 'Категории технического состояния',
+        text: 'Техническое состояние строительных конструкций оценивается одной из четырёх категорий: нормативное, работоспособное, ограниченно работоспособное, аварийное. Категория определяется по результатам обследования с учётом дефектов, повреждений и расчётов.' },
+      { id: '7.5.2', title: 'Трещины в кирпичной кладке',
+        text: 'Трещины в кладке шириной раскрытия более 0,5 мм при отсутствии видимых причин являются признаком ограниченно работоспособного или аварийного состояния. Для уточнения категории состояния необходимо установить причину образования трещин и провести длительное наблюдение с использованием маяков.' },
+      { id: '7.7.1', title: 'Дефекты железобетона',
+        text: 'Признаками ограниченно работоспособного состояния железобетонных конструкций являются: трещины в защитном слое вдоль рабочей арматуры, отслоение защитного слоя, коррозия арматуры с уменьшением её сечения, прогибы выше допустимых, силовые трещины с раскрытием более допустимого.' },
+    ]
+  },
+  {
+    doc: 'СП 17.13330.2017',
+    fullTitle: 'Кровли',
+    items: [
+      { id: '4.4', title: 'Уклоны кровли',
+        text: 'Уклоны кровли из рулонных и мастичных материалов следует принимать не менее 1,5% (для эксплуатируемой) и не менее 2,5% (для неэксплуатируемой). Уклоны металлической кровли — не менее 20%, керамической и цементно-песчаной черепицы — не менее 22%.' },
+      { id: '5.1.7', title: 'Примыкания кровли',
+        text: 'Примыкания кровли к парапетам, стенам, трубам и другим вертикальным поверхностям должны быть выполнены с поднятием кровельного ковра на высоту не менее 250 мм. Верхний край ковра защищается фартуком из оцинкованной стали с заведением под отлив.' },
+    ]
+  },
+  {
+    doc: 'СП 22.13330.2016',
+    fullTitle: 'Основания зданий и сооружений',
+    items: [
+      { id: '6.1.5', title: 'Предельные деформации оснований',
+        text: 'Расчёт оснований по деформациям должен производиться исходя из условия совместной работы здания и основания. Предельные значения средней осадки и относительной разности осадок зависят от типа здания и приведены в таблицах СП.' },
+      { id: '8.3.2', title: 'Контроль качества свайных работ',
+        text: 'При устройстве свайных фундаментов обязательны: контроль вертикальности погружения свай (отклонение не более 1% длины), контроль глубины погружения, контроль несущей способности (статическими/динамическими испытаниями).' },
+    ]
+  },
+];
+
+// ───────────────────────────────────────────────────────────
+// СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+// ───────────────────────────────────────────────────────────
+const state = {
+  mode: 'violation',       // 'violation' | 'question'
+  query: '',
+  sources: { builtin: true, folder: true },
+  folderHandle: null,
+  folderDocs: [],          // [{ name, text, items: [{id, title, text}] }]
+  results: [],
+  recognition: null,
+  recognizing: false,
+  history: [],
+};
+
+// ───────────────────────────────────────────────────────────
+// СТЕММИНГ И ТОКЕНИЗАЦИЯ (РУССКИЙ, УПРОЩЁННЫЙ)
+// ───────────────────────────────────────────────────────────
+const STOPWORDS = new Set([
+  'и','в','во','не','на','я','с','со','как','а','то','все','она','так','его',
+  'но','да','ты','к','у','же','вы','за','бы','по','только','ее','мне','было',
+  'вот','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну',
+  'вдруг','ли','если','уже','или','быть','был','него','до','вас','нибудь',
+  'опять','уж','вам','ведь','там','потом','себя','ничего','ей','может','они',
+  'тут','где','есть','надо','ней','для','мы','тебя','их','чем','была','сам',
+  'чтоб','без','будто','чего','раз','тоже','себе','под','будет','ж','тогда',
+  'кто','этот','того','потому','этого','какой','совсем','ним','здесь','этом',
+  'один','почти','мой','тем','чтобы','нее','сейчас','были','куда','зачем',
+  'всех','никогда','можно','при','наконец','два','об','другой','хоть','после',
+  'над','больше','тот','через','эти','нас','про','всего','них','какая','много',
+  'разве','три','эту','моя','впрочем','хорошо','свою','этой','перед','иногда',
+  'лучше','чуть','том','нельзя','такой','им','более','всегда','конечно','всю',
+  'между','п','пункт','согласно','требованию','требование','требования'
+]);
+
+const ENDINGS = [
+  'ого','его','ому','ему','ыми','ими','ями','ами',
+  'ость','ение','ания','ация','ция','тся','ться',
+  'ах','ях','ой','ей','ою','ею','ый','ий','ая','яя','ое','ее','ые','ие',
+  'ам','ям','ом','ем','ов','ев','ин','ын','ть','ся','сь','ет','ит',
+  'ал','ел','ил','ыл','ну','ут','ют','ат','ят','ия',
+  'а','я','о','е','у','ю','ы','и','й','ь'
+];
+
+function stem(word) {
+  word = word.toLowerCase().replace(/ё/g, 'е');
+  if (word.length < 4) return word;
+  for (const e of ENDINGS) {
+    if (word.length > e.length + 2 && word.endsWith(e)) {
+      return word.slice(0, -e.length);
+    }
+  }
+  return word;
+}
+
+function tokenize(text) {
+  const tokens = text.toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^Ѐ-ӿa-z0-9\s\-\.]/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length >= 3 && !STOPWORDS.has(t));
+  return tokens.map(stem);
+}
+
+// ───────────────────────────────────────────────────────────
+// ПОИСК
+// ───────────────────────────────────────────────────────────
+function searchInItems(queryStems, items, source) {
+  const out = [];
+  for (const item of items) {
+    const docTokens = tokenize((item.title || '') + ' ' + (item.text || ''));
+    const titleTokens = new Set(tokenize(item.title || ''));
+    let matches = 0;
+    let titleHits = 0;
+    const matchedStems = new Set();
+    for (const qs of queryStems) {
+      for (const dt of docTokens) {
+        if (dt === qs || dt.startsWith(qs) || qs.startsWith(dt)) {
+          matches++;
+          matchedStems.add(qs);
+          if (titleTokens.has(dt)) titleHits++;
+          break;
+        }
+      }
+    }
+    if (matchedStems.size === 0) continue;
+    const coverage = matchedStems.size / queryStems.length;
+    const tfBonus = Math.log(1 + matches) * 0.15;
+    const titleBonus = titleHits * 0.25;
+    const score = coverage + tfBonus + titleBonus;
+    out.push({ ...item, source, score, matchedStems: [...matchedStems] });
+  }
+  return out;
+}
+
+function runSearch() {
+  const q = state.query.trim();
+  if (!q) {
+    showToast('Введи или наговори запрос');
+    return;
+  }
+  const queryStems = tokenize(q);
+  if (queryStems.length === 0) {
+    showToast('Слишком короткий запрос');
+    return;
+  }
+
+  let all = [];
+
+  if (state.sources.builtin) {
+    for (const doc of BUILTIN_BASE) {
+      const enriched = doc.items.map(it => ({
+        ...it,
+        docName: doc.doc,
+        docTitle: doc.fullTitle,
+      }));
+      all = all.concat(searchInItems(queryStems, enriched, 'builtin'));
+    }
+  }
+
+  if (state.sources.folder && state.folderDocs.length) {
+    for (const doc of state.folderDocs) {
+      const enriched = doc.items.map(it => ({
+        ...it,
+        docName: doc.name,
+        docTitle: doc.name,
+      }));
+      all = all.concat(searchInItems(queryStems, enriched, 'folder'));
+    }
+  }
+
+  all.sort((a, b) => b.score - a.score);
+  state.results = all.slice(0, 30);
+  saveHistory(q);
+  renderResults();
+}
+
+// ───────────────────────────────────────────────────────────
+// ПОДСВЕТКА СОВПАДЕНИЙ
+// ───────────────────────────────────────────────────────────
+function highlight(text, queryStems) {
+  if (!queryStems.length) return escapeHtml(text);
+  const safe = escapeHtml(text);
+  const wordRe = /([Ѐ-ӿa-zA-Z]+)/g;
+  return safe.replace(wordRe, (m) => {
+    const s = stem(m);
+    for (const qs of queryStems) {
+      if (s === qs || s.startsWith(qs) || qs.startsWith(s)) {
+        return `<mark>${m}</mark>`;
+      }
+    }
+    return m;
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ───────────────────────────────────────────────────────────
+// РЕНДЕРИНГ РЕЗУЛЬТАТОВ
+// ───────────────────────────────────────────────────────────
+function renderResults() {
+  const root = document.getElementById('results');
+  const countEl = document.getElementById('resultsCount');
+  if (!state.results.length) {
+    root.innerHTML = `<div class="empty"><div class="icon">🤷</div><div>Ничего не нашёл. Попробуй другие слова или подключи папку с документами.</div></div>`;
+    countEl.textContent = '';
+    return;
+  }
+  countEl.textContent = `${state.results.length} совпадений`;
+  const queryStems = tokenize(state.query);
+  root.innerHTML = state.results.map((r, i) => {
+    const sourceClass = r.source === 'folder' ? 'from-folder' : 'from-builtin';
+    const sourceLabel = r.source === 'folder' ? '📂 ' + r.docName : '📘 ' + r.docName;
+    const pct = Math.min(100, Math.round(r.score * 50));
+    const idAndTitle = r.id ? `п. ${r.id} — ${r.title || ''}` : (r.title || '');
+    return `
+      <div class="result ${sourceClass}">
+        <div class="result-head">
+          <span class="result-doc">${escapeHtml(sourceLabel)}</span>
+          <span class="result-score">релевантность ${pct}%</span>
+        </div>
+        <div class="result-title">${escapeHtml(idAndTitle)}</div>
+        <div class="result-text">${highlight(r.text, queryStems)}</div>
+        <div class="result-actions">
+          <button class="pill-btn" data-act="copy" data-i="${i}">Скопировать для акта</button>
+          <button class="pill-btn" data-act="copytext" data-i="${i}">Скопировать цитату</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('results').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const i = +btn.dataset.i;
+  const r = state.results[i];
+  if (!r) return;
+  if (btn.dataset.act === 'copy') {
+    showCopyModal(r);
+  } else if (btn.dataset.act === 'copytext') {
+    copyToClipboard(`«${r.text}» (${r.docName}, п. ${r.id || '—'})`);
+  }
+});
+
+// ───────────────────────────────────────────────────────────
+// ГЕНЕРАЦИЯ ТЕКСТА ДЛЯ АКТА
+// ───────────────────────────────────────────────────────────
+function buildActText(r) {
+  const userText = state.query.trim();
+  const pointRef = r.id ? `п. ${r.id} ${r.docName}` : r.docName;
+  if (state.mode === 'violation') {
+    return `Нарушение ${pointRef}: ${userText}.\nТребование: ${r.text}`;
+  } else {
+    return `Согласно ${pointRef}: ${r.text}`;
+  }
+}
+
+function showCopyModal(r) {
+  const txt = buildActText(r);
+  document.getElementById('copyBlockText').textContent = txt;
+  document.getElementById('copyModal').classList.add('show');
+  document.getElementById('doCopyBtn').onclick = () => {
+    copyToClipboard(txt);
+    document.getElementById('copyModal').classList.remove('show');
+  };
+}
+document.getElementById('closeCopyBtn').onclick = () => {
+  document.getElementById('copyModal').classList.remove('show');
+};
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showToast('Скопировано'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('Скопировано'); }
+    catch (e) { showToast('Не удалось скопировать'); }
+    document.body.removeChild(ta);
+  }
+}
+
+// ───────────────────────────────────────────────────────────
+// РАСПОЗНАВАНИЕ РЕЧИ
+// ───────────────────────────────────────────────────────────
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('micHint').textContent = 'Голос не поддерживается в этом браузере';
+    document.getElementById('micBtn').disabled = true;
+    return;
+  }
+  state.recognition = new SR();
+  state.recognition.lang = 'ru-RU';
+  state.recognition.continuous = false;
+  state.recognition.interimResults = true;
+
+  let finalBuf = '';
+  state.recognition.onresult = (ev) => {
+    let interim = '';
+    finalBuf = '';
+    for (let i = 0; i < ev.results.length; i++) {
+      const t = ev.results[i][0].transcript;
+      if (ev.results[i].isFinal) finalBuf += t;
+      else interim += t;
+    }
+    const box = document.getElementById('queryBox');
+    box.value = (finalBuf || '') + (interim ? ' ' + interim : '');
+    state.query = box.value;
+  };
+  state.recognition.onerror = (e) => {
+    showToast('Ошибка распознавания: ' + (e.error || 'unknown'));
+    stopRecording();
+  };
+  state.recognition.onend = () => {
+    stopRecording();
+  };
+}
+
+function startRecording() {
+  if (!state.recognition) return;
+  try {
+    state.recognition.start();
+    state.recognizing = true;
+    document.getElementById('micBtn').classList.add('recording');
+    document.getElementById('micHint').textContent = 'Говори…';
+  } catch (e) {
+    showToast('Не удалось запустить запись');
+  }
+}
+function stopRecording() {
+  state.recognizing = false;
+  document.getElementById('micBtn').classList.remove('recording');
+  document.getElementById('micHint').textContent = 'Нажми и говори';
+  try { state.recognition && state.recognition.stop(); } catch (e) {}
+}
+
+document.getElementById('micBtn').addEventListener('click', () => {
+  if (state.recognizing) stopRecording();
+  else startRecording();
+});
+
+// ───────────────────────────────────────────────────────────
+// FILE SYSTEM ACCESS API — ПАПКА НА ТЕЛЕФОНЕ
+// ───────────────────────────────────────────────────────────
+async function pickFolder() {
+  if (!window.showDirectoryPicker) {
+    showToast('Выбор папки не поддерживается. Используй Chrome на Android/Desktop.');
+    return;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'read' });
+    state.folderHandle = handle;
+    await indexFolder(handle);
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      showToast('Не удалось открыть папку: ' + e.message);
+    }
+  }
+}
+
+async function indexFolder(handle) {
+  const progressRow = document.getElementById('folderProgressRow');
+  const progressText = document.getElementById('folderProgressText');
+  const progressBar = document.getElementById('folderProgressBar');
+  progressRow.style.display = 'flex';
+  progressText.textContent = 'Сканирую папку…';
+  progressBar.style.width = '0%';
+
+  const files = [];
+  for await (const entry of handle.values()) {
+    if (entry.kind !== 'file') continue;
+    const n = entry.name.toLowerCase();
+    if (n.endsWith('.pdf') || n.endsWith('.txt') || n.endsWith('.md')) {
+      files.push(entry);
+    }
+  }
+
+  state.folderDocs = [];
+  let done = 0;
+  for (const fh of files) {
+    progressText.textContent = `Обрабатываю ${done + 1} из ${files.length}: ${fh.name}`;
+    try {
+      const file = await fh.getFile();
+      let text = '';
+      if (fh.name.toLowerCase().endsWith('.pdf')) {
+        text = await extractPdfText(file);
+      } else {
+        text = await file.text();
+      }
+      const items = splitDocIntoItems(text, fh.name);
+      state.folderDocs.push({ name: fh.name, text, items });
+    } catch (e) {
+      console.warn('Не смог прочитать', fh.name, e);
+    }
+    done++;
+    progressBar.style.width = (100 * done / files.length) + '%';
+  }
+
+  progressRow.style.display = 'none';
+  const totalItems = state.folderDocs.reduce((s, d) => s + d.items.length, 0);
+  document.getElementById('folderMeta').textContent =
+    `${state.folderDocs.length} файлов, ${totalItems} фрагментов`;
+  showToast(`Папка проиндексирована: ${state.folderDocs.length} файлов`);
+}
+
+async function extractPdfText(file) {
+  if (!window.pdfjsLib) throw new Error('pdf.js не загружен');
+  const arrayBuf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+  let out = '';
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    out += content.items.map(it => it.str).join(' ') + '\n\n';
+  }
+  return out;
+}
+
+// Разбиваем документ на «пункты» по эвристике — ищем «N.N.N Заголовок» или «N.N Заголовок»
+function splitDocIntoItems(text, fileName) {
+  const items = [];
+  // Регулярка ищет «5.1», «7.2.3», «10.4.1.2» в начале строки или после переноса
+  const re = /(?:^|\n)\s*((?:\d+\.){1,4}\d+|\d+\s*\.\s*\d+)\s+([^\n]{5,200})/g;
+  let m;
+  const positions = [];
+  while ((m = re.exec(text)) !== null) {
+    positions.push({ start: m.index, id: m[1].replace(/\s+/g, ''), title: m[2].trim() });
+  }
+  if (positions.length === 0) {
+    // Нет нумерации — делим на куски по 500 слов
+    const words = text.split(/\s+/);
+    for (let i = 0; i < words.length; i += 400) {
+      const chunk = words.slice(i, i + 500).join(' ');
+      items.push({ id: '', title: `Фрагмент ${Math.floor(i / 400) + 1}`, text: chunk });
+    }
+    return items;
+  }
+  for (let i = 0; i < positions.length; i++) {
+    const cur = positions[i];
+    const next = positions[i + 1];
+    const chunk = text.slice(cur.start, next ? next.start : Math.min(cur.start + 3000, text.length)).trim();
+    items.push({ id: cur.id, title: cur.title, text: chunk });
+  }
+  return items;
+}
+
+document.getElementById('pickFolderBtn').addEventListener('click', pickFolder);
+
+// ───────────────────────────────────────────────────────────
+// ТУМБЛЕРЫ ИСТОЧНИКОВ
+// ───────────────────────────────────────────────────────────
+document.querySelectorAll('.toggle[data-source]').forEach(el => {
+  el.addEventListener('click', () => {
+    const src = el.dataset.source;
+    state.sources[src] = !state.sources[src];
+    el.classList.toggle('on', state.sources[src]);
+  });
+});
+
+// ───────────────────────────────────────────────────────────
+// ВКЛАДКИ РЕЖИМОВ
+// ───────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    state.mode = t.dataset.mode;
+    document.getElementById('queryBox').placeholder = state.mode === 'violation'
+      ? '…или впиши руками. Например: трещина в кирпичной кладке несущей стены'
+      : '…или впиши вопрос. Например: какой допуск отклонения стены от вертикали';
+  });
+});
+
+// ───────────────────────────────────────────────────────────
+// ИНТЕРНЕТ-ПОИСК
+// ───────────────────────────────────────────────────────────
+function openInExternal(template) {
+  const q = (state.query || document.getElementById('queryBox').value).trim();
+  if (!q) {
+    showToast('Сначала введи запрос');
+    return;
+  }
+  const url = template.replace('{q}', encodeURIComponent(q));
+  window.open(url, '_blank', 'noopener');
+}
+document.getElementById('searchYandex').onclick = () =>
+  openInExternal('https://yandex.ru/search/?text={q}+ГОСТ+СП');
+document.getElementById('searchCntd').onclick = () =>
+  openInExternal('https://yandex.ru/search/?text={q}+site%3Acntd.ru');
+document.getElementById('searchDocsCntd').onclick = () =>
+  openInExternal('https://yandex.ru/search/?text={q}+site%3Adocs.cntd.ru');
+
+// ───────────────────────────────────────────────────────────
+// ИСТОРИЯ
+// ───────────────────────────────────────────────────────────
+const HISTORY_KEY = 'voice-compliance-history-v1';
+function loadHistory() {
+  try {
+    state.history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  } catch (e) { state.history = []; }
+  renderHistory();
+}
+function saveHistory(q) {
+  state.history = state.history.filter(h => h.q !== q);
+  state.history.unshift({ q, mode: state.mode, t: Date.now() });
+  state.history = state.history.slice(0, 10);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(state.history)); } catch (e) {}
+  renderHistory();
+}
+function renderHistory() {
+  const block = document.getElementById('historyBlock');
+  const list = document.getElementById('historyList');
+  if (!state.history.length) {
+    block.style.display = 'none';
+    return;
+  }
+  block.style.display = 'block';
+  list.innerHTML = state.history.map((h, i) => {
+    const d = new Date(h.t);
+    const time = d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const modeIcon = h.mode === 'question' ? '❓' : '⚠️';
+    return `<div class="history-item" data-i="${i}">
+      <span class="history-text">${modeIcon} ${escapeHtml(h.q)}</span>
+      <span class="history-meta">${time}</span>
+    </div>`;
+  }).join('');
+}
+document.getElementById('historyList').addEventListener('click', (e) => {
+  const item = e.target.closest('.history-item');
+  if (!item) return;
+  const h = state.history[+item.dataset.i];
+  if (!h) return;
+  document.getElementById('queryBox').value = h.q;
+  state.query = h.q;
+  if (h.mode !== state.mode) {
+    document.querySelector(`.tab[data-mode="${h.mode}"]`).click();
+  }
+  runSearch();
+});
+document.getElementById('clearHistoryBtn').onclick = () => {
+  state.history = [];
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+};
+
+// ───────────────────────────────────────────────────────────
+// TOAST
+// ───────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ───────────────────────────────────────────────────────────
+// ОСНОВНЫЕ КНОПКИ
+// ───────────────────────────────────────────────────────────
+document.getElementById('queryBox').addEventListener('input', (e) => {
+  state.query = e.target.value;
+});
+document.getElementById('searchBtn').addEventListener('click', () => {
+  state.query = document.getElementById('queryBox').value;
+  runSearch();
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('queryBox').value = '';
+  state.query = '';
+  state.results = [];
+  renderResults();
+});
+
+// ───────────────────────────────────────────────────────────
+// SERVICE WORKER
+// ───────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// ───────────────────────────────────────────────────────────
+// СТАРТ
+// ───────────────────────────────────────────────────────────
+function init() {
+  const totalItems = BUILTIN_BASE.reduce((s, d) => s + d.items.length, 0);
+  document.getElementById('builtinMeta').textContent =
+    `${BUILTIN_BASE.length} документов, ${totalItems} пунктов`;
+  initRecognition();
+  loadHistory();
+  renderResults();
+}
+init();
+</script>
+</body>
+</html>
