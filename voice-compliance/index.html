@@ -587,14 +587,16 @@
 
     <div class="source-row">
       <div class="source-info">
-        <div class="source-name">Папка на телефоне</div>
-        <div class="source-meta" id="folderMeta">Не подключена</div>
+        <div class="source-name">Папка / файлы на телефоне</div>
+        <div class="source-meta" id="folderMeta">Не подключены</div>
       </div>
       <div class="source-controls">
-        <button class="pill-btn" id="pickFolderBtn">Подключить</button>
+        <button class="pill-btn" id="pickFolderBtn" title="Подключить папку (Android Chrome / десктоп)">Папка</button>
+        <button class="pill-btn" id="pickFilesBtn" title="Выбрать файлы (работает везде)">Файлы</button>
         <div class="toggle on" id="toggleFolder" data-source="folder"></div>
       </div>
     </div>
+    <input type="file" id="filePicker" multiple accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown" style="display:none">
 
     <div class="source-row" id="folderProgressRow" style="display:none;">
       <div class="source-info" style="flex:1">
@@ -852,6 +854,7 @@ const state = {
   recognition: null,
   recognizing: false,
   history: [],
+  pickerBusy: false,
 };
 
 // ───────────────────────────────────────────────────────────
@@ -1149,54 +1152,89 @@ document.getElementById('micBtn').addEventListener('click', () => {
 // FILE SYSTEM ACCESS API — ПАПКА НА ТЕЛЕФОНЕ
 // ───────────────────────────────────────────────────────────
 async function pickFolder() {
+  if (state.pickerBusy) return;
   if (!window.showDirectoryPicker) {
-    showToast('Выбор папки не поддерживается. Используй Chrome на Android/Desktop.');
+    showToast('Выбор папки не поддерживается этим браузером. Жми «Файлы».');
     return;
   }
+  state.pickerBusy = true;
   try {
     const handle = await window.showDirectoryPicker({ mode: 'read' });
     state.folderHandle = handle;
-    await indexFolder(handle);
-  } catch (e) {
-    if (e.name !== 'AbortError') {
-      showToast('Не удалось открыть папку: ' + e.message);
+    const files = [];
+    for await (const entry of handle.values()) {
+      if (entry.kind !== 'file') continue;
+      const n = entry.name.toLowerCase();
+      if (n.endsWith('.pdf') || n.endsWith('.txt') || n.endsWith('.md')) {
+        files.push(await entry.getFile());
+      }
     }
+    if (!files.length) {
+      showToast('В папке нет .pdf, .txt или .md файлов');
+    } else {
+      await indexFiles(files);
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      // Пользователь закрыл диалог — это нормально, ничего не сообщаем.
+    } else if (e.message && e.message.includes('already active')) {
+      showToast('Подожди, предыдущий диалог ещё открыт');
+    } else {
+      showToast('Не удалось открыть папку: ' + e.message + '. Попробуй кнопку «Файлы».');
+    }
+  } finally {
+    state.pickerBusy = false;
   }
 }
 
-async function indexFolder(handle) {
+async function pickFiles() {
+  if (state.pickerBusy) return;
+  state.pickerBusy = true;
+  const input = document.getElementById('filePicker');
+  input.value = '';
+  await new Promise((resolve) => {
+    const onChange = async () => {
+      input.removeEventListener('change', onChange);
+      const files = Array.from(input.files || []).filter(f => {
+        const n = f.name.toLowerCase();
+        return n.endsWith('.pdf') || n.endsWith('.txt') || n.endsWith('.md');
+      });
+      if (!files.length) {
+        showToast('Выбери .pdf, .txt или .md файлы');
+      } else {
+        await indexFiles(files);
+      }
+      resolve();
+    };
+    input.addEventListener('change', onChange);
+    input.click();
+  });
+  state.pickerBusy = false;
+}
+
+async function indexFiles(files) {
   const progressRow = document.getElementById('folderProgressRow');
   const progressText = document.getElementById('folderProgressText');
   const progressBar = document.getElementById('folderProgressBar');
   progressRow.style.display = 'flex';
-  progressText.textContent = 'Сканирую папку…';
+  progressText.textContent = 'Читаю файлы…';
   progressBar.style.width = '0%';
-
-  const files = [];
-  for await (const entry of handle.values()) {
-    if (entry.kind !== 'file') continue;
-    const n = entry.name.toLowerCase();
-    if (n.endsWith('.pdf') || n.endsWith('.txt') || n.endsWith('.md')) {
-      files.push(entry);
-    }
-  }
 
   state.folderDocs = [];
   let done = 0;
-  for (const fh of files) {
-    progressText.textContent = `Обрабатываю ${done + 1} из ${files.length}: ${fh.name}`;
+  for (const file of files) {
+    progressText.textContent = `Обрабатываю ${done + 1} из ${files.length}: ${file.name}`;
     try {
-      const file = await fh.getFile();
       let text = '';
-      if (fh.name.toLowerCase().endsWith('.pdf')) {
+      if (file.name.toLowerCase().endsWith('.pdf')) {
         text = await extractPdfText(file);
       } else {
         text = await file.text();
       }
-      const items = splitDocIntoItems(text, fh.name);
-      state.folderDocs.push({ name: fh.name, text, items });
+      const items = splitDocIntoItems(text, file.name);
+      state.folderDocs.push({ name: file.name, text, items });
     } catch (e) {
-      console.warn('Не смог прочитать', fh.name, e);
+      console.warn('Не смог прочитать', file.name, e);
     }
     done++;
     progressBar.style.width = (100 * done / files.length) + '%';
@@ -1206,7 +1244,7 @@ async function indexFolder(handle) {
   const totalItems = state.folderDocs.reduce((s, d) => s + d.items.length, 0);
   document.getElementById('folderMeta').textContent =
     `${state.folderDocs.length} файлов, ${totalItems} фрагментов`;
-  showToast(`Папка проиндексирована: ${state.folderDocs.length} файлов`);
+  showToast(`Готово: ${state.folderDocs.length} файлов`);
 }
 
 async function extractPdfText(file) {
@@ -1251,6 +1289,7 @@ function splitDocIntoItems(text, fileName) {
 }
 
 document.getElementById('pickFolderBtn').addEventListener('click', pickFolder);
+document.getElementById('pickFilesBtn').addEventListener('click', pickFiles);
 
 // ───────────────────────────────────────────────────────────
 // ТУМБЛЕРЫ ИСТОЧНИКОВ

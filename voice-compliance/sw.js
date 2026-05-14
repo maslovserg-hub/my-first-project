@@ -1,7 +1,7 @@
 // Service Worker для PWA «Контроль нормативки».
 // Кэширует все статические файлы — приложение работает оффлайн.
 
-const CACHE = 'voice-compliance-v1';
+const CACHE = 'voice-compliance-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -28,17 +28,32 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  // Кэшируем только GET-запросы к собственному origin.
   if (event.request.method !== 'GET' || url.origin !== location.origin) return;
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((resp) => {
-        // Обновляем кэш на лету для тех файлов, что не были в начальном списке.
-        const respClone = resp.clone();
-        caches.open(CACHE).then((cache) => cache.put(event.request, respClone)).catch(() => {});
+
+  const isHtml = event.request.mode === 'navigate' ||
+                 url.pathname.endsWith('/') ||
+                 url.pathname.endsWith('.html');
+
+  if (isHtml) {
+    // Network-first для HTML: всегда тянем свежее, кэш на случай оффлайна.
+    event.respondWith(
+      fetch(event.request).then((resp) => {
+        const clone = resp.clone();
+        caches.open(CACHE).then((cache) => cache.put(event.request, clone)).catch(() => {});
         return resp;
-      }).catch(() => cached);
-    })
-  );
+      }).catch(() => caches.match(event.request))
+    );
+  } else {
+    // Stale-while-revalidate для статики (pdf.js, иконки): отдаём кэш, тихо обновляем.
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        const fetchPromise = fetch(event.request).then((resp) => {
+          const clone = resp.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, clone)).catch(() => {});
+          return resp;
+        }).catch(() => cached);
+        return cached || fetchPromise;
+      })
+    );
+  }
 });
